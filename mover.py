@@ -236,6 +236,12 @@ def jittered(x, y):
         y + random.randint(-5, 5)
     )
 
+def jittered_small(x, y):
+    return (
+        x + random.randint(-10, 10),
+        y + random.randint(-3, 3)
+    )
+
 if mode == 1:
     print("Calibrating regular attachment...")
     success = False
@@ -261,16 +267,18 @@ if mode == 1:
         stat_2_val = clean_percent(stat_2)
         stat_3_val = clean_percent(stat_3)
 
+        jx4, jy4 = jittered_small(x4, y4)
+
         if None in (stat_1_val, stat_2_val, stat_3_val):
             print("OCR failed to read one or more stats, retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(2)
             continue
 
         if any(v > 200 for v in (stat_1_val, stat_2_val, stat_3_val)):
             print("OCR read an impossible value (>200%), retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(3)
             continue
@@ -279,7 +287,7 @@ if mode == 1:
 
         if not 100 <= stat_total <= 600:
             print(f"Hard error: invalid stat total ({stat_total}), retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(3)
             continue
@@ -289,7 +297,7 @@ if mode == 1:
             success = True
         else:
             print(f"Stat total too low ({stat_total}), retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(3)
 
@@ -322,16 +330,18 @@ elif mode == 2:
         stat_3_val = clean_percent(stat_3)
         stat_4_val = clean_percent(stat_4)
 
+        jx4, jy4 = jittered_small(x4, y4)
+
         if None in (stat_1_val, stat_2_val, stat_3_val, stat_4_val):
             print("OCR failed to read one or more stats, retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(2)
             continue
 
         if any(v > 200 for v in (stat_1_val, stat_2_val, stat_3_val, stat_4_val)):
             print("OCR read an impossible value (>200%), retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(3)
             continue
@@ -340,7 +350,7 @@ elif mode == 2:
 
         if not 100 <= stat_total <= 800:
             print(f"Hard error: invalid stat total ({stat_total}), retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(3)
             continue
@@ -350,7 +360,7 @@ elif mode == 2:
             success = True
         else:
             print(f"Stat total too low ({stat_total}), retrying...")
-            pyautogui.moveTo(x4, y4)
+            pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(3)
 
