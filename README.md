@@ -197,6 +197,8 @@ The OCR reading is **not 100% accurate** and will make errors. The script has se
 ### Gold consumption
 The script runs continuously until the desired stat total is reached. It does **not** detect when you run out of gold (yet) and will keep clicking regardless. At approximately **120,000 gold per minute**, make sure you have enough prepared before starting. Running out mid-session means the script will keep running but no calibrations will actually happen, wasting time.
 
+### TOS
+This script likely violates the game's Terms of Service. Use at your own risk. Personally, I have never had issues running scripts like this that don't touch any game files — but I cannot guarantee the same for you and I take no responsibility for any warnings, bans, or other consequences you may receive.
 ### Vibe coded slop ahead
 Everything is vibe coded. Please don't have unreasonable expectations.
 

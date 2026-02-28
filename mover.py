@@ -9,6 +9,7 @@ from PIL import Image
 import pytesseract
 import keyboard
 import threading
+import random
 
 # READ THIS DISCLAIMER:
 # WARNING VIBE CODED SLOP AHEAD!
@@ -229,18 +230,26 @@ for i in range(3, -1, -1):
     print(f"Starting in {i} seconds...")
     time.sleep(1)
 
+def jittered(x, y):
+    return (
+        x + random.randint(-15, 15),
+        y + random.randint(-5, 5)
+    )
+
 if mode == 1:
     print("Calibrating regular attachment...")
     success = False
 
     while not success:
-        pyautogui.moveTo(x1, y1)
+        jx1, jy1 = jittered(x1, y1)
+        pyautogui.moveTo(jx1, jy1)
         pyautogui.click()
         time.sleep(1)
 
         check_pause_exit()
 
-        pyautogui.moveTo(x2, y2)
+        jx2, jy2 = jittered(x2, y2)
+        pyautogui.moveTo(jx2, jy2)
         pyautogui.click()
         time.sleep(6)
 
@@ -292,13 +301,15 @@ elif mode == 2:
     success = False
 
     while not success:
-        pyautogui.moveTo(x1, y1)
+        jx1, jy1 = jittered(x1, y1)
+        pyautogui.moveTo(jx1, jy1)
         pyautogui.click()
         time.sleep(1)
 
         check_pause_exit()
 
-        pyautogui.moveTo(x2, y2)
+        jx2, jy2 = jittered(x2, y2)
+        pyautogui.moveTo(jx2, jy2)
         pyautogui.click()
         time.sleep(6)
 
