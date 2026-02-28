@@ -103,11 +103,16 @@ You can run the scripts in two ways:
 Open the project folder in an IDE of your choice (e.g. PyCharm, VS Code) and use the built-in run button to execute the scripts directly.
 
 **Option B — Command line:**
-Open a terminal, navigate to the project folder and activate the virtual environment, then run the script:
+Open a terminal, navigate to the project folder and activate the virtual environment, then run the script:  
+
+Activate the venv:
 ```
 cd path\to\attachment-calibrator
 .venv\Scripts\activate
-python mover.py
+```  
+You should now be able to execute any script from the project folder as:
+```
+python script_name.py
 ```
 
 ## 1. Game settings
@@ -120,7 +125,7 @@ Before doing anything else, open the game settings, navigate to **Graphics**, an
 
 In-game, navigate to the calibration screen.
 
-> 📷 *[IMAGE PLACEHOLDER: calibration screen navigation]*
+> ![calibration menu picture](images/calibration_menu.png)
 
 ---
 
@@ -144,9 +149,12 @@ Follow the on-screen instructions. A few things to keep in mind:
 - For **buttons** (Quick Selection, Calibrate, Confirm, Restore): hovering roughly over the middle of the button is fine.
 - For **stat values** (the percentage numbers): precision matters. Align the **yellow box at the bottom of your cursor** to the **top-right corner of the grey stat box**, as shown below.
 
-> 📷 *[IMAGE PLACEHOLDER: cursor alignment on stat box corner]*
+> ![cursor alignment showcase](images/cursor_alignment.png)
 
-When asked whether to save 3 or 4 stat coordinates, **4 is recommended** as it allows you to use both modes. You need 4 coordinates if you plan to calibrate muzzles.
+When asked whether to save 3 or 4 stat coordinates, **4 is recommended** as it allows you to use both modes. You need 4 coordinates if you plan to calibrate muzzles.  
+
+During the coordinate for the stats, please move the cursor in the following order:
+> ![order of alignment](images/order_of_alignment.png)
 
 The coordinates will be saved to `coordinates.json`. If you weren't confident about your placement, re-run `get_coordinates.py` and redo it — it will overwrite the previous file. If you only need to redo the stat positions, run `update_stat_cords.py` instead.
 
