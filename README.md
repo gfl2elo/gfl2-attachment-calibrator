@@ -15,6 +15,9 @@ If you get a version number (3.10 or higher required), you're good. If not, down
 
 ## 2. Git
 
+> **Note:** If you downloaded the project as a ZIP file via the green "code" button top right, and extracted it manually, you can skip this step entirely. Please `cd` into the extracted folder and proceed with step 4.
+
+
 Check if Git is installed:
 ```
 git --version
@@ -27,8 +30,8 @@ If not installed, download it from https://git-scm.com/downloads and install wit
 
 Navigate to the folder where you want the project to live, then run:
 ```
-git clone https://github.com/gfl2elo/attachment-calibrator
-cd attachment-calibrator
+git clone https://github.com/gfl2elo/gfl2-attachment-calibrator
+cd gfl2-attachment-calibrator
 ```
 
 ---
