@@ -28,17 +28,17 @@ If not installed, download it from https://git-scm.com/downloads and install wit
 
 ## 3. Clone the repository
 
-Navigate to the folder where you want the project to live, then run:
+Open a terminal (cmd) in the folder where you want the project to be installed.
+If you are unsure how to change folders, you can simply run the command below and the project will install in the current folder.
 ```
 git clone https://github.com/gfl2elo/gfl2-attachment-calibrator
 cd gfl2-attachment-calibrator
-
 ```
 
 ---
 
 ## 4. Install Python dependencies
-Activate the venv and install the requirements. Your cmd window should look something like the picture below by now.
+Activate the venv and install the requirements. Your terminal (cmd) window should look something like the picture below by now.
 ```
 python -m venv venv
 venv\Scripts\activate
