@@ -32,14 +32,19 @@ Navigate to the folder where you want the project to live, then run:
 ```
 git clone https://github.com/gfl2elo/gfl2-attachment-calibrator
 cd gfl2-attachment-calibrator
+
 ```
 
 ---
 
 ## 4. Install Python dependencies
+Activate the venv and install the requirements. Your cmd window should look something like the picture below by now.
 ```
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
+> ![install_guide_picture](images/install_guide.png)
 
 ---
 
