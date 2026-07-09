@@ -48,6 +48,8 @@ y6 = coords["stat_2"]["y"]
 x7 = coords["stat_3"]["x"]
 y7 = coords["stat_3"]["y"]
 
+counter = 0
+
 pause_event = threading.Event()
 exit_event = threading.Event()
 
@@ -106,55 +108,56 @@ def read_stat_percent(img, cx, cy, label="stat", fallback_top_half=False, top_ha
 
     clean.save(f"debug_{label}_masked.png")
 
+    def ocr_value(image):
+        text = pytesseract.image_to_string(image, config="--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789").strip()
+        m = re.search(r"\d+", text)
+        return m.group(0) if m else None
+
+    def normalize(value):
+        if value is None:
+            return None
+        if len(value) == 5:
+            value = value[:3]
+        if len(value) == 4:
+            value = value[:3]
+        elif len(value) == 3 and value[-1] != "0":
+            value = value[:2]
+        if len(value) == 1:
+            value = value + "0"
+        return value
+
+    def fixup(value):
+        """Hardcoded corrections for known OCR artifacts."""
+        if value is None:
+            return None
+        known = {
+            "710": "70",
+            "00":  None,  # always bad, force fallback
+        }
+        return known.get(value, value)
+
+    def looks_bad(value):
+        if value is None:
+            return True
+        try:
+            return int(value) > 200 or value == "00" or int(value) == 0
+        except ValueError:
+            return True
+
+    top_half = clean.crop((0, 0, clean.width, int(clean.height * 0.55)))
+    top_half.save(f"debug_{label}_tophalf.png")
+
     if top_half_first:
-        top_half = clean.crop((0, 0, clean.width, int(clean.height * 0.55)))
-        top_half.save(f"debug_{label}_tophalf.png")
-        text = pytesseract.image_to_string(top_half, config="--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789").strip()
-        match = re.search(r"\d+", text)
-        if not match:
-            # fall back to full box
-            text = pytesseract.image_to_string(clean, config="--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789").strip()
-            match = re.search(r"\d+", text)
+        value = fixup(normalize(ocr_value(top_half)))
+        if looks_bad(value):
+            value = fixup(normalize(ocr_value(clean)))
     else:
-        text = pytesseract.image_to_string(clean, config="--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789").strip()
-        match = re.search(r"\d+", text)
+        value = fixup(normalize(ocr_value(clean)))
+        if fallback_top_half and looks_bad(value):
+            value = fixup(normalize(ocr_value(top_half)))
 
-        if not match and fallback_top_half:
-            top_half = clean.crop((0, 0, clean.width, int(clean.height * 0.55)))
-            top_half.save(f"debug_{label}_tophalf.png")
-            text = pytesseract.image_to_string(top_half, config="--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789").strip()
-            match = re.search(r"\d+", text)
-
-    if not match:
+    if not value or looks_bad(value):
         return None
-
-    value = match.group(0)
-
-    # common ocr artifact cleanup
-    if len(value) == 5:
-        value = value[:3]
-    if len(value) == 4:
-        value = value[:3]
-    elif len(value) == 3 and value[-1] != "0":
-        value = value[:2]
-
-    if len(value) == 1:
-        value = value + "0"
-
-    if value == "710":
-        value = "70"
-
-    if fallback_top_half and int(value) > 200:
-        top_half = clean.crop((0, 0, clean.width, int(clean.height * 0.55)))
-        top_half.save(f"debug_{label}_tophalf.png")
-        text = pytesseract.image_to_string(top_half, config="--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789").strip()
-        match = re.search(r"\d+", text)
-        if match:
-            value = match.group(0)
-            if len(value) == 4:
-                value = value[:3]
-            elif len(value) == 3 and value[-1] != "0":
-                value = value[:2]
 
     return value + "%"
 
@@ -163,10 +166,10 @@ def capture_and_read_values(four_stats=False):
     pyautogui.screenshot(screenshot_path)
     img = Image.open(screenshot_path)
 
-    stat_1 = read_stat_percent(img, x5, y5, "stat_1", fallback_top_half=four_stats)
-    stat_2 = read_stat_percent(img, x6, y6, "stat_2", fallback_top_half=four_stats)
-    stat_3 = read_stat_percent(img, x7, y7, "stat_3", fallback_top_half=four_stats, top_half_first=four_stats)
-    stat_4 = read_stat_percent(img, x8, y8, "stat_4", fallback_top_half=True,  top_half_first=four_stats) if four_stats else None
+    stat_1 = read_stat_percent(img, x5, y5, "stat_1", fallback_top_half=True)
+    stat_2 = read_stat_percent(img, x6, y6, "stat_2", fallback_top_half=True)
+    stat_3 = read_stat_percent(img, x7, y7, "stat_3", fallback_top_half=True, top_half_first=four_stats)
+    stat_4 = read_stat_percent(img, x8, y8, "stat_4", fallback_top_half=True, top_half_first=four_stats) if four_stats else None
 
     img.close()
     os.remove(screenshot_path)
@@ -269,6 +272,8 @@ if mode == 1:
 
         jx4, jy4 = jittered_small(x4, y4)
 
+        counter += 1
+
         if None in (stat_1_val, stat_2_val, stat_3_val):
             print("OCR failed to read one or more stats, retrying...")
             pyautogui.moveTo(jx4, jy4)
@@ -292,11 +297,16 @@ if mode == 1:
             time.sleep(2 + random.uniform(-0.3, 0.5))
             continue
 
-        if stat_total >= desired_stat_total:
+        if stat_total >= desired_stat_total and all(v >= 100 for v in (stat_1_val, stat_2_val, stat_3_val)):
             print(f"Success! Total: {stat_total}")
+            gold_used = counter * 20000
+            print(f"Gold used: {gold_used}")
             success = True
         else:
-            print(f"Stat total too low ({stat_total}), retrying...")
+            if stat_total >= desired_stat_total:
+                print(f"Total ok ({stat_total}) but a stat was below 100%, retrying...")
+            else:
+                print(f"Stat total too low ({stat_total}), retrying...")
             pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(2 + random.uniform(-0.3, 0.5))
@@ -312,14 +322,14 @@ elif mode == 2:
         jx1, jy1 = jittered(x1, y1)
         pyautogui.moveTo(jx1, jy1)
         pyautogui.click()
-        time.sleep(1 + random.uniform(-0.2, 0.4))
+        time.sleep(0.6 + random.uniform(-0.2, 0.4))
 
         check_pause_exit()
 
         jx2, jy2 = jittered(x2, y2)
         pyautogui.moveTo(jx2, jy2)
         pyautogui.click()
-        time.sleep(6 + random.uniform(-0.5, 0.8))
+        time.sleep(2 + random.uniform(-0.5, 0.8))
 
         check_pause_exit()
 
@@ -331,6 +341,8 @@ elif mode == 2:
         stat_4_val = clean_percent(stat_4)
 
         jx4, jy4 = jittered_small(x4, y4)
+
+        counter += 1
 
         if None in (stat_1_val, stat_2_val, stat_3_val, stat_4_val):
             print("OCR failed to read one or more stats, retrying...")
@@ -355,11 +367,16 @@ elif mode == 2:
             time.sleep(2 + random.uniform(-0.3, 0.5))
             continue
 
-        if stat_total >= desired_stat_total:
+        if stat_total >= desired_stat_total and all(v >= 100 for v in (stat_1_val, stat_2_val, stat_3_val, stat_4_val)):
             print(f"Success! Total: {stat_total}")
+            gold_used = counter * 20000
+            print(f"Gold used: {gold_used}")
             success = True
         else:
-            print(f"Stat total too low ({stat_total}), retrying...")
+            if stat_total >= desired_stat_total:
+                print(f"Total ok ({stat_total}) but a stat was below 100%, retrying...")
+            else:
+                print(f"Stat total too low ({stat_total}), retrying...")
             pyautogui.moveTo(jx4, jy4)
             pyautogui.click()
             time.sleep(2 + random.uniform(-0.3, 0.5))
