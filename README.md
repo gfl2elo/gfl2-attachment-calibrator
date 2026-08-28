@@ -187,6 +187,24 @@ Follow the on-screen instructions:
    - Mode 1 default: **450** (range: 100–600)
    - Mode 2 default: **600** (range: 100–800)
 
+3. **Set a gold limit:** Each calibration attempt costs 20,000 gold. The default limit is **700,000**, and a limit between **600,000 and 800,000** is suggested. The script checks the remaining budget before every attempt and never knowingly starts one that would exceed the limit. If the limit is not divisible by 20,000, it stops at the highest complete attempt below the limit.
+
+4. **Choose whether to lower the goal gradually:** When enabled, the goal drops by **10** after each **250,000 gold spent**, down to a minimum total that you choose. For example, a 460 starting goal with a 430 minimum becomes 450 after 250,000 gold and 440 after 500,000 gold. Because attempts cost 20,000, a change takes effect on the first attempt that crosses each threshold.
+
+Your choices are saved automatically to `settings.json`. On later runs, the script shows all saved details in brackets and asks whether to reload them. Press Enter to accept the saved settings, or answer `n` to enter and save a new configuration.
+
+### Gold usage history
+
+After each successful full attachment run, the script appends the result to `gold_history.json`. Individual calibration attempts and runs that end without an accepted attachment are not recorded as completed runs. Each entry includes the mode, starting goal, final goal after any gradual decreases, achieved total, attempts, and total gold consumed.
+
+The file also maintains separate averages for each mode and goal band. A band covers the 20 points ending at the effective multiple-of-10 goal: for example, goals of 420, 450, and 460 are grouped as **400–420%**, **430–450%**, and **440–460%**. After saving a successful run, the script prints the updated average for its band.
+
+### Valuable partial-read rescans
+
+Every accepted OCR value must be between **10% and 200%** and divisible by **10**. Readings such as 11–19 are rejected instead of being mistaken for 110–190.
+
+If the first OCR pass misses one or more values but successfully reads at least two stats totaling **270% or more**, the script takes four additional screenshots and rescans only the missing values. The retry crop moves a few pixels left, right, upward, and downward across the four scans so a number cut off at one crop position can be recovered at another. Any stat initially read as **10% or 20%** also receives all four verification scans, because a dropped zero could turn a strong 100% or 200% stat into a destructive misread. A **120%** reading is checked twice with shifted crops without adding console noise, because this value can be an artifact of 130%. The script also verifies the final stat four additional times when the preceding stats total at least **250%** but the complete reading would still miss the current goal (or fail the 100%-per-stat requirement). To avoid discarding a good attachment because of repeated low misreads, the highest valid reading from the original scan and all applicable verification scans is used. These rescans do not spend gold.
+
 The script will then count down and start automatically.
 
 ### Controls
@@ -203,7 +221,7 @@ The script will then count down and start automatically.
 The OCR reading is **not 100% accurate** and will make errors. The script has several built-in correction rules to catch common misreads, but it is not perfect. If you notice a consistent pattern — for example, 70% always being read as 710% — please report it on Discord (**elo_777**) so a correction rule can be added.
 
 ### Gold consumption
-The script runs continuously until the desired stat total is reached. It does **not** detect when you run out of gold (yet) and will keep clicking regardless. At approximately **120,000 gold per minute**, make sure you have enough prepared before starting. Running out mid-session means the script will keep running but no calibrations will actually happen, wasting time.
+The configured gold limit is based on the script's attempt count; it cannot read your actual in-game gold balance. Make sure you have at least as much gold available as the limit you enter. If your balance is lower than the configured limit, the script cannot detect that and may continue clicking after the game stops accepting calibrations.
 
 ### TOS
 This script likely violates the game's Terms of Service. Use at your own risk. Personally, I have never had issues running scripts like this that don't touch any game files — but I cannot guarantee the same for you and I take no responsibility for any warnings, bans, or other consequences you may receive.
@@ -221,7 +239,7 @@ For your first use, do **2-3 test runs** and pause after stat collection (F9) to
 ## Troubleshooting
 
 ### Bad reads and retries
-If the script gets a bad OCR read, it automatically restores the previous calibration and starts a new attempt. It does not give up on its own — if your coordinates are badly placed it can loop indefinitely. If you notice it cycling without ever succeeding, pause with F9, check the debug images, and re-run `update_stat_cords.py`.
+If the script gets a bad OCR read, it may perform valuable partial-read rescans before restoring the previous calibration and starting a new attempt. Bad coordinates can still cause every attempt to fail, but the run will stop once the configured gold limit is reached. If you notice repeated failures, pause with F9, check the debug images, and re-run `update_stat_cords.py`.
 
 ### Coordinates are off
 If the cropped debug images are landing in the wrong place, update just the stat coordinates with:
